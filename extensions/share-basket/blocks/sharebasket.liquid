@@ -1,0 +1,284 @@
+<!-- Loading Overlay -->
+<div id="share-basket-loading" class="share-basket-loading" style="display: none;">
+  <div class="loader"></div>
+  <p class="loading-text">✨ Preparing your shared basket... almost there! 🛒</p>
+</div>
+
+<!-- Share Modal -->
+<div id="share-modal" class="share-modal">
+  <div class="share-header">
+    <span id="intro-text">Share</span>
+    <button id="close-modal" class="close-btn" aria-label="Close">&times;</button>
+  </div>
+
+  <div class="share-body">
+    <p class="label">Share link via</p>
+    <div class="share-icons">
+      <button class="icon-btn" id="share-whatsapp"><i class="fab fa-whatsapp"></i></button>
+      <button class="icon-btn" id="share-facebook"><i class="fab fa-facebook-f"></i></button>
+      <button class="icon-btn" id="share-linkedin"><i class="fab fa-linkedin-in"></i></button>
+      <button class="icon-btn" id="share-pinterest"><i class="fab fa-pinterest-p"></i></button>
+      <button class="icon-btn" id="share-telegram"><i class="fab fa-telegram-plane"></i></button>
+    </div>
+
+    <p class="label">Page direct</p>
+    <button id="copy-link-btn" class="copy-btn">
+      <i class="uil uil-link-alt"></i> Copy link
+    </button>
+
+    <!-- Terms Note -->
+    <p id="terms-note" style="margin-top: 20px; font-size: 12px;">
+    </p>
+  </div>
+</div>
+<div id="toast-container" class="toast-container"></div>
+
+<!-- Icons -->
+<link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+
+<script>
+  const [settings] = {{ metaobjects['sharebasket-by-winsomies'].values | json }};
+  const template = "{{ template }}";
+  const isEnable = settings?.cartSharingEnabled === "enabled" && template.includes("cart");
+  const plan = settings?.appPlan?.toLowerCase() === "pro" ? "pro" : "free";
+  console.log("Share Basket Plan", plan)
+  const debug = true;
+  const loading = document.getElementById("share-basket-loading");
+  const loadingText = document.querySelector(".loading-text");
+  const serverUrl = "https://alarm-placed-compound-medal.trycloudflare.com";
+  const currentUser = "{{ customer }}";
+  const introText = document.querySelector("#intro-text");
+  const termsNote = document.querySelector("#terms-note");
+  const shareModal = document.querySelector("#share-modal");
+
+  const borderRadius = (settings && plan === "pro")
+  ? (typeof settings.borderRadius === 'number' ? `${settings.borderRadius}px` : settings.borderRadius || '6px')
+  : '6px';
+
+const backgroundColor = (settings && plan === "pro") ? settings.buttonColor || '#000' : '#000';
+const color = (settings && plan === "pro") ? settings.textColor || '#fff' : '#fff';
+const shareModalBackgroundColor = (settings && plan === "pro") 
+  ? settings.shareModalBackgroundColor || '#ffffff' 
+  : '#ffffff';
+
+const shareModalTextColor = (settings && plan === "pro") 
+  ? settings.shareModalTextColor || '#000000' 
+  : '#000000';
+
+  const checkoutBtn = document.getElementById("checkout")
+      || document.querySelector('[name="add"]')
+      || document.querySelector('button[type="submit"]')
+      || document.querySelector('.btn--checkout');
+  if (settings?.introText) introText.textContent = settings.introText;
+  if(termsNote && settings["termsNote"]){
+    termsNote.innerHTML = parseMarkdownLinks(settings["termsNote"]);
+  }
+  function parseMarkdownLinks(text) {
+  return text.replace(/\[([^\]]+)]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+}
+document.querySelectorAll(".icon-btn, .copy-btn").forEach(btn => {
+  btn.style.backgroundColor = backgroundColor;
+  btn.style.color = color;
+  btn.style.borderRadius = borderRadius;
+});
+
+
+  function showToast(message, type = "success") {
+  const toastContainer = document.getElementById("toast-container");
+
+  const toast = document.createElement("div");
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `
+    <span>${message}</span>
+    <button class="toast-close">&times;</button>
+  `;
+
+  toastContainer.appendChild(toast);
+
+  const closeBtn = toast.querySelector(".toast-close");
+  closeBtn.onclick = () => toast.remove();
+
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+  if (debug) console.log("[Share Basket] Settings:", settings);
+
+  document.addEventListener("DOMContentLoaded", async () => {
+    if (!isEnable) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareId = urlParams.get("sharebasket");
+    const shop = window.Shopify.shop;
+    // Restore shared basket
+    if (shareId) {
+      if (debug) console.log("[Share Basket] Found sharebasket ID:", shareId);
+      loading.style.display = "flex";
+      try {
+        const res = await fetch(`${serverUrl}/api/get-cart?shareId=${shareId}&shop=${shop}`);
+        const result = await res.json();
+        const expirationDate = new Date(new Date(result.created).getTime() + Number(settings.linkExpiration) * 3600000);
+        if (settings.requireLogin && !currentUser) {
+          loadingText.textContent = settings.loginRequiredMessage || "Please log in to view this shared cart.";
+          return setTimeout(() => {
+            window.location.href = "/account/login?return_url=" + encodeURIComponent(window.location.href);
+          }, 1500);
+        }
+        if (Date.now() > expirationDate) {
+          loadingText.textContent = settings.expiredMessage || "❌ Sorry, this link has expired.";
+          return setTimeout(() => window.location.href = "/cart", 1500);
+        }
+
+      
+
+        if (result.success && Array.isArray(result.items)) {
+          await fetch("/cart/clear.js", { method: "POST" });
+          for (const item of result.items) {
+            await fetch("/cart/add.js", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id: item.id, quantity: item.quantity })
+            });
+          }
+
+          let redirectUrl = "/cart";
+          sessionStorage.setItem("sharedBasketId", shareId);
+
+          return window.location.href = redirectUrl;
+
+        } else {
+          loadingText.textContent = "❌ Shared basket not found. Redirecting to cart... 🛒";
+          return setTimeout(() => window.location.href = "/cart", 1500);
+        }
+
+      } catch (err) {
+        console.error("[Share Basket] Error restoring cart:", err);
+        loadingText.textContent = "❌ Shared basket not found. Redirecting to cart... 🛒";
+        return setTimeout(() => window.location.href = "/cart", 1500);
+      }
+    }
+
+    // Insert Share Button
+
+
+    if (!checkoutBtn) {
+      if (debug) console.warn("[Share Basket] Checkout button not found.");
+      return;
+    }
+    const storedShareId = sessionStorage.getItem("sharedBasketId");
+
+if (settings.autoApplyDiscount && settings.discountCode && storedShareId && plan == "pro") {
+            console.log("Adding Discount")
+            const discountCode = encodeURIComponent(settings.discountCode);
+              checkoutBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const checkoutUrl = `/checkout?discount=${discountCode}`;
+                sessionStorage.removeItem("sharedBasketId");
+                if (debug) console.log("[Share Basket] Redirecting with discount:", checkoutUrl);
+                window.location.href = checkoutUrl;
+              });
+          }
+    const shareBtn = document.createElement("button");
+    shareBtn.id = "share-basket-btn";
+    shareBtn.innerText = settings.shareButtonLabel || "Share Basket 🛒";
+    shareBtn.style.cssText = `
+     border-radius: ${borderRadius};
+  background-color: ${backgroundColor};
+  color: ${color};
+  font-weight:bold;
+      margin: 0%;
+      border: none;
+      cursor: pointer;
+    `;
+shareModal.style.backgroundColor = shareModalBackgroundColor;
+shareModal.style.color = shareModalTextColor;
+
+
+
+    checkoutBtn.insertAdjacentElement("afterend", shareBtn);
+    if (debug) console.log("[Share Basket] Button inserted.");
+
+    shareBtn.addEventListener("click", async () => {
+
+
+      try {
+        const originalText = shareBtn.innerHTML;
+        shareBtn.innerHTML = `Sharing <span class="spinner"></span>`;
+        shareBtn.disabled = true;
+
+        const cart = await fetch("/cart.js").then(res => res.json());
+        const simplifiedItems = cart.items.map(item => ({
+          id: item.variant_id,
+          quantity: item.quantity
+        }));
+        const shop = window.Shopify?.shop || window.location.hostname;
+
+        const response = await fetch(`${serverUrl}/api/save-cart`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shop, items: simplifiedItems, plan })
+        });
+
+        const result = await response.json();
+        console.log("[Share Basket] API response:", result, "status:", response.status);
+
+        // Check for HTTP errors explicitly
+        if (!response.ok) {
+          showToast(result.error || `Request failed with status ${response.status}`, "error");
+          shareBtn.innerHTML = originalText;
+          shareBtn.disabled = false;
+          return; // stop execution here
+        }
+        if (result.shareUrl) {
+          const encodedLink = encodeURIComponent(result.shareUrl);
+          const popup = document.getElementById("share-modal");
+          const copyBtn = document.getElementById("copy-link-btn");
+          const closeBtn = document.getElementById("close-modal");
+
+          // Setup sharing links
+          document.getElementById("share-facebook").onclick = () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`, '_blank');
+          document.getElementById("share-whatsapp").onclick = () => window.open(`https://api.whatsapp.com/send?text=${encodedLink}`, '_blank');
+          document.getElementById("share-telegram").onclick = () => window.open(`https://t.me/share/url?url=${encodedLink}`, '_blank');
+          document.getElementById("share-linkedin").onclick = () => window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodedLink}`, '_blank');
+          document.getElementById("share-pinterest").onclick = () => window.open(`https://pinterest.com/pin/create/button/?url=${encodedLink}`, '_blank');
+
+          // Show modal
+          popup.classList.add("visible");
+          shareBtn.innerHTML = originalText;
+          shareBtn.disabled = false;
+
+          // Copy to clipboard
+          copyBtn.onclick = () => {
+            navigator.clipboard.writeText(result.shareUrl);
+            copyBtn.innerHTML = "<i class='uil uil-check'></i> Copied!";
+            showToast(settings["successMessage"] || "Link Copied")
+            setTimeout(() => {
+              copyBtn.innerHTML = "<i class='uil uil-link-alt'></i> Copy link";
+            }, 2000);
+          };
+
+          closeBtn.onclick = () => {
+            popup.classList.remove("visible");
+          };
+        }
+
+      } catch (err) {
+        console.error("[Share Basket] Error:", err);  // Use err here, not error
+        showToast("Failed to share basket: " + err.message, "error");
+        shareBtn.innerHTML = originalText;
+        shareBtn.disabled = false;
+      }
+
+    });
+  });
+</script>
+
+{% schema %}
+{
+  "name": "Share Basket",
+  "stylesheet": "styles.css",
+  "target": "body"
+}
+{% endschema %}

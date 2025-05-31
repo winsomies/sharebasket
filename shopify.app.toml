@@ -1,0 +1,36 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "2d7e5481a9e5b83944e77972d5b40e96"
+name = "Share Basket"
+handle = "share-basket"
+application_url = "https://alarm-placed-compound-medal.trycloudflare.com"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+automatically_update_urls_on_dev = true
+
+[webhooks]
+api_version = "2025-04"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
+  [[webhooks.subscriptions]]
+  topics = [ "app/scopes_update" ]
+  uri = "/webhooks/app/scopes_update"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_metaobjects,write_metaobject_definitions,write_metaobjects,write_products,write_themes,read_discounts"
+
+[auth]
+redirect_urls = [
+  "https://alarm-placed-compound-medal.trycloudflare.com/auth/callback",
+  "https://alarm-placed-compound-medal.trycloudflare.com/auth/shopify/callback",
+  "https://alarm-placed-compound-medal.trycloudflare.com/api/auth/callback"
+]
+
+[pos]
+embedded = false
