@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { SetupGuide } from "../components/SetupGuide";
-import { Page, Text, Layout, Card, Button } from "@shopify/polaris";
+import { Page, Layout, Card, Button } from "@shopify/polaris";
 import useShareBasket from "../store/Store";
 import { ExternalIcon, EditIcon } from "@shopify/polaris-icons";
 import { useNavigate } from "@remix-run/react";
-import RoundedBarChart from "../components/Chart";
-import LinkStatsAreaChart from "../components/Chart";
 import LinkStatsBarChart from "../components/Chart";
 
 export default function Index() {
@@ -18,7 +16,7 @@ export default function Index() {
     const themeEditorId = theme.split("/").pop();
     const shopName = shop?.myshopifyDomain?.split(".")[0];
     const extensionId = "918f57f3-1d7b-425d-9d54-6998aedd7475";
-    const extensionName = "shareb-asket";
+    const extensionName = "sharebasket";
     const editorUrl = `https://admin.shopify.com/store/${shopName}/themes/${themeEditorId}/editor?context=apps&template=index&activateAppId=${extensionId}/${extensionName}`;
     return editorUrl;
   };
@@ -87,8 +85,8 @@ export default function Index() {
 
   return (
     <Page
-      title={`Hello, ${shop.name}! Turn Shared Carts into Winning Customers! 🛒🏆`}
-      subtitle="Let shoppers pick up where they left off or send carts to friends — it's cart magic that drives repeat business."
+      title={`Hello, ${shop.name}! From Cart to Heart in One Share 💌🛒`}
+      subtitle="Let shoppers save their cart or share it with friends — simple magic that brings them back."
       secondaryActions={[
         {
           content: "View Documentation",

@@ -172,8 +172,6 @@
 
 .label {
    font-size: 1.3rem;
-  /* color: #555; */
-  font-weight: 700;
 }
 
 .share-icons {
@@ -355,7 +353,6 @@
 
 #terms-note{
   text-align: center;
-  font-weight: 800;
   margin-bottom: 0%;
 }
 .toast {
