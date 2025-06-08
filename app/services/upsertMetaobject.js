@@ -117,15 +117,14 @@ const upsertMetaObject = async (admin, fields) => {
                 },
                 {
                   name: "Share Modal Background Color",
-                  key: "modalBgColor",
+                  key: "shareModalBackgroundColor",
                   type: "single_line_text_field",
                 },
                 {
                   name: "Share Modal Text Color",
-                  key: "modalTextColor",
+                  key: "shareModalTextColor",
                   type: "single_line_text_field",
                 },
-
                 // 💳 App Plan
                 {
                   name: "App Plan",

@@ -22,9 +22,8 @@ export default function Index() {
   };
 
   const generateItems = () => {
-    const isCartSharingEnabled =
-      metaobject?.cartSharingEnabled === "enabled" ? true : false;
-    console.log(metaobject, isCartSharingEnabled);
+    const isCartSharingEnabled = metaobject?.cartSharingEnabled === "enabled";
+    console.log("cart sharing staus", isCartSharingEnabled);
     return [
       {
         id: 0,

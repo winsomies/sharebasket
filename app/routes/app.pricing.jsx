@@ -19,7 +19,7 @@ export const action = async ({ request }) => {
       plans: [PRO_PLAN],
       onFailure: async () => {
         return billing.request({
-          isTest:true,
+          isTest:false,
           plan: PRO_PLAN,
           returnUrl: `https://admin.shopify.com/store/${shopName}/apps/share-basket/app/`,
         });
@@ -50,7 +50,7 @@ export const action = async ({ request }) => {
     const { metaobject } = await upsertMetaObject(admin, defaultFields);
     const cancelledSubscription = await billing.cancel({
       subscriptionId: subscription.id,
-      isTest: true,
+      isTest: false,
       prorate: true,
      });
   };

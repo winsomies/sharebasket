@@ -102,6 +102,7 @@ export const action = async ({ request }) => {
   ];
 
   const { metaobject } = await upsertMetaObject(admin, fields);
+  console.log(metaobject)
 
   return { metaobject };
 };
