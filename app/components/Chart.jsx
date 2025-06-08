@@ -10,10 +10,12 @@ import {
 } from "recharts";
 import useShareBasket from "../store/Store";
 
+import { useNavigate } from "@remix-run/react";
 
   
 
 export default function LinkStatsBarChart({blur}) {
+  const navigate= useNavigate();
   const {analytics} = useShareBasket();
   console.log("Ana", analytics)
 
