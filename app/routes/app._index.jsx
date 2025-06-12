@@ -84,14 +84,14 @@ export default function Index() {
 
   return (
     <Page
-      title={`Hello, ${shop.name}! From Cart to Heart in One Share 💌🛒`}
+      title={`Hello, ${shop.name}! From Cart to Heart in One Share 🧺❤️`}
       subtitle="Let shoppers save their cart or share it with friends — simple magic that brings them back."
       secondaryActions={[
         {
           content: "View Documentation",
           target: "_blank",
           icon: ExternalIcon,
-          url: "https://winsomies.com/docs/share-basket",
+          url: "https://winsomies.com/docs/sharebasket",
         },
       ]}
       primaryAction={{

@@ -1,13 +1,13 @@
 const upsertMetaObject = async (admin, fields) => {
   const handle = "sharebasket-settings";
-  const type = "sharebasket-by-winsomies"; // MetaObject type
+  const type = "share-basket-by-winsomies"; // MetaObject type
 
   try {
     // Step 1: Ensure MetaObject Definition exists
     const definitionCheck = await admin.graphql(
       `#graphql
         {
-          metaobjectDefinitionByType(type: "sharebasket-by-winsomies") {
+          metaobjectDefinitionByType(type: "share-basket-by-winsomies") {
             id
             name
           }

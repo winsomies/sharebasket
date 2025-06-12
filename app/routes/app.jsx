@@ -33,7 +33,7 @@ export const loader = async ({ request }) => {
     const { metaobject } = await upsertMetaObject(admin, defaultFields);
 
   }
-  const type = "sharebasket-by-winsomies";
+  const type = "share-basket-by-winsomies";
 
   const queryResponse = await admin.graphql(`
     {
