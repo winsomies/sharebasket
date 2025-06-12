@@ -1,4 +1,4 @@
-# 🛒 Share Basket App Documentation
+# 🧺 Share Basket App Documentation
 
 **From Cart to Heart in One Share 💌**
 Let your customers save and share their shopping carts — making it easier to come back or invite others to buy together. Share Basket is built for Shopify and helps boost engagement, conversions, and average order value.
