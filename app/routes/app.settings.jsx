@@ -112,13 +112,13 @@ export default function ShareBasketSettings() {
   const navigate = useNavigate();
   const isSaving = fetcher.state !== "idle";
   const { plan, setMetaobject, metaobject, discounts } = useShareBasket();
-  // const hasProPlan = true;
+  
   const hasProPlan =
     plan?.hasActivePayment &&
     plan?.appSubscriptions?.length > 0 &&
     plan.appSubscriptions[0]?.status === "ACTIVE" &&
     plan.appSubscriptions[0]?.name === "Pro Plan";
-
+  
   // State variables
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [cartSharingEnabled, setCartSharingEnabled] = useState("enabled");
@@ -130,60 +130,80 @@ export default function ShareBasketSettings() {
   const [successMessage, setSuccessMessage] = useState("Link copied!");
   const [introText, setIntroText] = useState("");
   const [termsNote, setTermsNote] = useState("Discount applies at checkout.");
-  const [expiredMessage, setExpiredMessage] = useState(
-    "This link has expired.",
-  );
+  const [expiredMessage, setExpiredMessage] = useState("This link has expired.");
   const [loginRequiredMessage, setLoginRequiredMessage] = useState(
-    "Please log in to access this shared cart.",
+    "Please log in to access this shared cart."
   );
   const [buttonColor, setButtonColor] = useState("#000000");
   const [textColor, setTextColor] = useState("#ffffff");
   const [borderRadius, setBorderRadius] = useState(8);
-  const [shareModalBackgroundColor, setShareModalBackgroundColor] =
-    useState("#ffffff");
+  const [shareModalBackgroundColor, setShareModalBackgroundColor] = useState("#ffffff");
   const [shareModalTextColor, setShareModalTextColor] = useState("#000000");
-
   const [errors, setErrors] = useState({});
-
-  // Handle fetcher response
+  
+  // Helper function to convert string booleans
+  const toBooleanValue = (value) => {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return Boolean(value);
+  };
+  
+  // Handle fetcher response with error handling
   useEffect(() => {
-    if (
-      fetcher.state === "idle" &&
-      fetcher.data?.metaobject &&
-      Array.isArray(fetcher.data.metaobject.fields)
-    ) {
-      const rawMetaobject = fetcher.data.metaobject;
-
-      const updatedMetaobject = {
-        id: rawMetaobject.id,
-        handle: rawMetaobject.handle,
-        displayName: rawMetaobject.displayName,
-        ...Object.fromEntries(
-          rawMetaobject.fields.map((field) => [field.key, field.value]),
-        ),
-      };
-      setMetaobject(updatedMetaobject);
-
-      if (typeof shopify !== "undefined" && shopify.toast) {
-        shopify.toast.show("Settings saved successfully.");
+    if (fetcher.state === "idle") {
+      // Handle errors
+      if (fetcher.data?.error) {
+        if (typeof shopify !== "undefined" && shopify.toast) {
+          shopify.toast.show(fetcher.data.error, { isError: true });
+        }
+        return;
+      }
+  
+      // Handle success
+      if (fetcher.data?.metaobject && Array.isArray(fetcher.data.metaobject.fields)) {
+        const rawMetaobject = fetcher.data.metaobject;
+  
+        const updatedMetaobject = {
+          id: rawMetaobject.id,
+          handle: rawMetaobject.handle,
+          displayName: rawMetaobject.displayName,
+          ...Object.fromEntries(
+            rawMetaobject.fields.map((field) => [field.key, field.value])
+          ),
+        };
+        setMetaobject(updatedMetaobject);
+  
+        if (typeof shopify !== "undefined" && shopify.toast) {
+          shopify.toast.show("Settings saved successfully.");
+        }
       }
     }
   }, [fetcher.state, fetcher.data, setMetaobject]);
+  
+  // Auto-select discount with better logic
   useEffect(() => {
     console.log('Discounts array:', discounts);
     console.log('Current discountCode:', discountCode);
     
-    // Auto-select if there's only one discount and none is selected
-    if (discounts && discounts.length === 1 && !discountCode && autoApplyDiscount) {
+    // Auto-select if there's only one discount, none is selected, and auto-apply is enabled
+    if (
+      discounts && 
+      discounts.length === 1 && 
+      autoApplyDiscount && 
+      (!discountCode || discountCode === "")
+    ) {
       const singleDiscount = discounts[0];
       console.log('Auto-selecting single discount:', singleDiscount);
-      setDiscountCode(singleDiscount.value);
+      if (singleDiscount?.value) {
+        setDiscountCode(singleDiscount.value);
+      }
     }
-  }, [discounts, discountCode, autoApplyDiscount]);
-  // Initialize state from metaobject
+  }, [discounts, autoApplyDiscount]); // Removed discountCode from deps to avoid infinite loops
+  
+  // Initialize state from metaobject with better defaults
   useEffect(() => {
     if (!metaobject || Object.keys(metaobject).length === 0) return;
-
+  
     const {
       cartSharingEnabled = "enabled",
       linkExpiration = "7",
@@ -193,8 +213,8 @@ export default function ShareBasketSettings() {
       shareButtonLabel = "Share Cart",
       successMessage = "Link copied!",
       introText = "",
-      termsNote = "",
-      expiredMessage = "",
+      termsNote = "Discount applies at checkout.", // Consistent default
+      expiredMessage = "This link has expired.",
       loginRequiredMessage = "Please log in to access this shared cart.",
       buttonColor = "#000000",
       textColor = "#ffffff",
@@ -202,13 +222,11 @@ export default function ShareBasketSettings() {
       shareModalBackgroundColor = "#ffffff",
       shareModalTextColor = "#000000",
     } = metaobject;
-
+  
     setCartSharingEnabled(cartSharingEnabled);
     setLinkExpiration(linkExpiration);
-    setRequireLogin(requireLogin === true || requireLogin === "true");
-    setAutoApplyDiscount(
-      autoApplyDiscount === true || autoApplyDiscount === "true",
-    );
+    setRequireLogin(toBooleanValue(requireLogin));
+    setAutoApplyDiscount(toBooleanValue(autoApplyDiscount));
     setShareModalBackgroundColor(shareModalBackgroundColor);
     setShareModalTextColor(shareModalTextColor);
     setDiscountCode(discountCode);
@@ -220,47 +238,51 @@ export default function ShareBasketSettings() {
     setLoginRequiredMessage(loginRequiredMessage);
     setButtonColor(buttonColor);
     setTextColor(textColor);
-    setBorderRadius(Number(borderRadius));
+    setBorderRadius(Number(borderRadius) || 8); // Fallback for invalid numbers
   }, [metaobject]);
-
+  
   // Options
   const enableDisableOptions = [
     { label: "Enabled", value: "enabled" },
     { label: "Disabled", value: "disabled" },
   ];
-
+  
   const expirationOptions = [
     { label: "24 hours", value: "1" },
     { label: "3 days", value: "3" },
     { label: "7 days", value: "7" },
     { label: "Never expires", value: "never" },
   ];
-
+  
   // Fixed handleProFeature function
   const handleProFeature = (callback) => {
     if (!hasProPlan) {
       setShowUpgradeModal(true);
-      return false; // Indicate that the action was blocked
+      return false;
     } else {
       callback();
-      return true; // Indicate that the action was executed
+      return true;
     }
   };
-
+  
   const handleSave = () => {
+    // Clear previous errors
+    setErrors({});
+    
     const newErrors = {};
-
-    if (autoApplyDiscount && !discountCode) {
+  
+    // Validation with better error messages
+    if (autoApplyDiscount && (!discountCode || discountCode.trim() === "")) {
       newErrors.discountCode = "Please select a discount code to auto-apply.";
     }
     
-    if (!(shareButtonLabel || "").trim()) {
+    if (!shareButtonLabel?.trim()) {
       newErrors.shareButtonLabel = "Share button label is required.";
     } else if (shareButtonLabel.length > 25) {
       newErrors.shareButtonLabel = "Maximum 25 characters allowed.";
     }
     
-    if (!(successMessage || "").trim()) {
+    if (!successMessage?.trim()) {
       newErrors.successMessage = "Success message is required.";
     } else if (successMessage.length > 100) {
       newErrors.successMessage = "Maximum 100 characters allowed.";
@@ -270,54 +292,56 @@ export default function ShareBasketSettings() {
       newErrors.introText = "Intro text can't exceed 250 characters.";
     }
     
-    if (!(termsNote || "").trim()) {
+    if (!termsNote?.trim()) {
       newErrors.termsNote = "Terms note is required.";
+    } else if (termsNote.length > 150) {
+      newErrors.termsNote = "Maximum 150 characters allowed.";
     }
     
-    if (!(expiredMessage || "").trim()) {
+    if (!expiredMessage?.trim()) {
       newErrors.expiredMessage = "Expired link message is required.";
     } else if (expiredMessage.length > 150) {
       newErrors.expiredMessage = "Maximum 150 characters allowed.";
     }
     
-    if (!(loginRequiredMessage || "").trim()) {
+    if (!loginRequiredMessage?.trim()) {
       newErrors.loginRequiredMessage = "Login required message is required.";
     } else if (loginRequiredMessage.length > 150) {
       newErrors.loginRequiredMessage = "Maximum 150 characters allowed.";
     }
     
     setErrors(newErrors);
-
+  
+    // Submit if no errors
     if (Object.keys(newErrors).length === 0) {
       const payload = {
         cartSharingEnabled,
         linkExpiration,
         requireLogin,
         autoApplyDiscount,
-        discountCode,
-        shareButtonLabel,
-        successMessage,
-        introText,
-        termsNote,
-        expiredMessage,
-        loginRequiredMessage,
+        discountCode: discountCode?.trim() || "", // Ensure clean data
+        shareButtonLabel: shareButtonLabel?.trim(),
+        successMessage: successMessage?.trim(),
+        introText: introText?.trim(),
+        termsNote: termsNote?.trim(),
+        expiredMessage: expiredMessage?.trim(),
+        loginRequiredMessage: loginRequiredMessage?.trim(),
         buttonColor,
         textColor,
         borderRadius,
         shareModalBackgroundColor,
         shareModalTextColor,
       };
-
+  
       const formData = new FormData();
       formData.append("payload", JSON.stringify(payload));
-
+  
       fetcher.submit(formData, {
         method: "POST",
         encType: "multipart/form-data",
       });
     }
   };
-
   return (
     <Page
       title="Cart Share Settings"

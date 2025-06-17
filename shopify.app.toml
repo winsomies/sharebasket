@@ -3,7 +3,7 @@
 client_id = "2d7e5481a9e5b83944e77972d5b40e96"
 name = "Share Basket"
 handle = "share-basket"
-application_url = "https://programmers-goat-immediate-nitrogen.trycloudflare.com"
+application_url = "https://sharebasket.winsomies.com/"
 embedded = true
 
 [build]
@@ -31,9 +31,9 @@ scopes = "read_metaobjects,write_metaobject_definitions,write_metaobjects,write_
 
 [auth]
 redirect_urls = [
-  "https://programmers-goat-immediate-nitrogen.trycloudflare.com/auth/callback",
-  "https://programmers-goat-immediate-nitrogen.trycloudflare.com/auth/shopify/callback",
-  "https://programmers-goat-immediate-nitrogen.trycloudflare.com/api/auth/callback"
+  "https://sharebasket.winsomies.com//auth/callback",
+  "https://sharebasket.winsomies.com//auth/shopify/callback",
+  "https://sharebasket.winsomies.com//api/auth/callback"
 ]
 
 [pos]
