@@ -253,39 +253,39 @@ export default function ShareBasketSettings() {
     if (autoApplyDiscount && !discountCode) {
       newErrors.discountCode = "Please select a discount code to auto-apply.";
     }
-
-    if (!shareButtonLabel.trim()) {
+    
+    if (!(shareButtonLabel || "").trim()) {
       newErrors.shareButtonLabel = "Share button label is required.";
     } else if (shareButtonLabel.length > 25) {
       newErrors.shareButtonLabel = "Maximum 25 characters allowed.";
     }
-
-    if (!successMessage.trim()) {
+    
+    if (!(successMessage || "").trim()) {
       newErrors.successMessage = "Success message is required.";
     } else if (successMessage.length > 100) {
       newErrors.successMessage = "Maximum 100 characters allowed.";
     }
-
+    
     if (introText && introText.length > 250) {
       newErrors.introText = "Intro text can't exceed 250 characters.";
     }
-
-    if (!termsNote.trim()) {
+    
+    if (!(termsNote || "").trim()) {
       newErrors.termsNote = "Terms note is required.";
     }
-
-    if (!expiredMessage.trim()) {
+    
+    if (!(expiredMessage || "").trim()) {
       newErrors.expiredMessage = "Expired link message is required.";
     } else if (expiredMessage.length > 150) {
       newErrors.expiredMessage = "Maximum 150 characters allowed.";
     }
-
-    if (!loginRequiredMessage.trim()) {
+    
+    if (!(loginRequiredMessage || "").trim()) {
       newErrors.loginRequiredMessage = "Login required message is required.";
     } else if (loginRequiredMessage.length > 150) {
       newErrors.loginRequiredMessage = "Maximum 150 characters allowed.";
     }
-
+    
     setErrors(newErrors);
 
     if (Object.keys(newErrors).length === 0) {
