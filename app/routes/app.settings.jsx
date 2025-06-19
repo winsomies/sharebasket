@@ -210,22 +210,22 @@ export default function ShareBasketSettings() {
   useEffect(() => {
     if (!metaobject || Object.keys(metaobject).length === 0) return;
 
-    setCartSharingEnabled(cartSharingEnabled || "disabled");
-    setLinkExpiration(linkExpiration || "7");
-    setRequireLogin(toBooleanValue(requireLogin ?? false));
-    setAutoApplyDiscount(toBooleanValue(autoApplyDiscount ?? false));
-    setShareModalBackgroundColor(shareModalBackgroundColor || "#ffffff");
-    setShareModalTextColor(shareModalTextColor || "#000000");
-    setDiscountCode(discountCode || "");
-    setShareButtonLabel(shareButtonLabel || "Share Cart");
-    setSuccessMessage(successMessage || "Link copied!");
-    setIntroText(introText || "");
-    setTermsNote(termsNote || "Discount applies at checkout.");
-    setExpiredMessage(expiredMessage || "This link has expired.");
-    setLoginRequiredMessage(loginRequiredMessage || "Please log in to access this shared cart.");
-    setButtonColor(buttonColor || "#000000");
-    setTextColor(textColor || "#ffffff");
-    setBorderRadius(Number(borderRadius) || 8);
+    setCartSharingEnabled(metaobject.cartSharingEnabled || "disabled");
+    setLinkExpiration(metaobject.linkExpiration || "7");
+    setRequireLogin(toBooleanValue(metaobject.requireLogin ?? false));
+    setAutoApplyDiscount(toBooleanValue(metaobject.autoApplyDiscount ?? false));
+    setShareModalBackgroundColor(metaobject.shareModalBackgroundColor || "#ffffff");
+    setShareModalTextColor(metaobject.shareModalTextColor || "#000000");
+    setDiscountCode(metaobject.discountCode || "");
+    setShareButtonLabel(metaobject.shareButtonLabel || "Share Cart");
+    setSuccessMessage(metaobject.successMessage || "Link copied!");
+    setIntroText(metaobject.introText || "");
+    setTermsNote(metaobject.termsNote || "Discount applies at checkout.");
+    setExpiredMessage(metaobject.expiredMessage || "This link has expired.");
+    setLoginRequiredMessage(metaobject.loginRequiredMessage || "Please log in to access this shared cart.");
+    setButtonColor(metaobject.buttonColor || "#000000");
+    setTextColor(metaobject.textColor || "#ffffff");
+    setBorderRadius(Number(metaobject.borderRadius) || 8);
     
   }, [metaobject]);
 
