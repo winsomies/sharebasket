@@ -116,7 +116,12 @@ export default function Index() {
         </Layout.Section>
         <Layout.Section>
           <Card title="Cart Sharing Analytics">
-            <LinkStatsBarChart blur={plan?.hasActivePayment == false} />
+            <LinkStatsBarChart
+              blur={
+                shop?.plan?.partnerDevelopment == false &&
+                plan?.hasActivePayment == false
+              }
+            />
           </Card>
         </Layout.Section>
       </Layout>

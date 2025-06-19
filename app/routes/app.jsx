@@ -25,14 +25,7 @@ export const loader = async ({ request }) => {
 
   const { themeId, isEnabled } = await checkAppEmbedStatus(admin);
   console.log("Theme", isEnabled)
-  if(plan?.hasActivePayment){
-    const defaultFields = [
-      { key: "appPlan", value: "pro" },
-    ];
-  
-    const { metaobject } = await upsertMetaObject(admin, defaultFields);
 
-  }
   const type = "share-basket-by-winsomies";
 
   const queryResponse = await admin.graphql(`
@@ -41,6 +34,9 @@ export const loader = async ({ request }) => {
         name
         shopOwnerName
         myshopifyDomain
+        plan{
+          partnerDevelopment
+        }
       }
       codeDiscountNodes(first: 250) {
         nodes {
@@ -96,7 +92,14 @@ export const loader = async ({ request }) => {
 
 
   const shop = queryData?.data?.shop || "";
+  if (plan.hasActivePayment || shop?.plan?.partnerDevelopment) {
+    const defaultFields = [
+      { key: "appPlan", value: "pro" },
+    ];
+  
+    const { metaobject } = await upsertMetaObject(admin, defaultFields);
 
+  }
   const metaobjectNode = queryData?.data?.metaobjects?.edges?.[0]?.node;
 
   const metaobjects = metaobjectNode

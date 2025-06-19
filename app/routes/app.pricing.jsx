@@ -61,14 +61,18 @@ export const action = async ({ request }) => {
 
 export default function Pricing() {
   const fetcher = useFetcher();
-  const { plan, metaobjects } = useShareBasket();
+  const { plan, metaobjects, shop } = useShareBasket();
   const [showDowngradeModal, setShowDowngradeModal] = useState(false);
   const isSaving = fetcher.state !== "idle";
 
   const hasProPlan =
+  shop?.plan?.partnerDevelopment === true || (
     plan?.hasActivePayment &&
     plan?.appSubscriptions?.[0]?.status === "ACTIVE" &&
-    plan.appSubscriptions[0]?.name === "Pro Plan";
+    plan.appSubscriptions?.[0]?.name === "Pro Plan"
+  );
+
+  const isPartnerDevStore = shop?.plan?.partnerDevelopment === true;
 
   const handlePlanSelect = useCallback(
     (planName) => {
@@ -105,7 +109,7 @@ export default function Pricing() {
             props: {
               variant: "secondary",
               onClick: () => setShowDowngradeModal(true),
-              disabled: isSaving,
+              disabled: isSaving || isPartnerDevStore,
               loading: isSaving,
             },
           }
