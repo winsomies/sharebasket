@@ -208,7 +208,9 @@ export default function ShareBasketSettings() {
 
   // Initialize state from metaobject with better defaults
   useEffect(() => {
+    console.log("metaobject:", metaobject);
     if (!metaobject || Object.keys(metaobject).length === 0) return;
+    console.log("metaobject:", metaobject);
 
     setCartSharingEnabled(metaobject.cartSharingEnabled || "disabled");
     setLinkExpiration(metaobject.linkExpiration || "7");
